@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: agrismart-server
+    env: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGO_URI
+        value: mongodb+srv://Agrivision:MyP9JD8fOZW61Xxm@agrivision.jsp7hdt.mongodb.net/agrismart?retryWrites=true&w=majority&appName=Agrivision
+      - key: CLOUDINARY_CLOUD_NAME
+        value: dgzjfrvf8
+      - key: CLOUDINARY_API_KEY
+        value: "222594771762983"
+      - key: CLOUDINARY_API_SECRET
+        value: 8nXU3Cjg9n3yFTT-ZwH7YFx3U3g
+      - key: GEMINI_API_KEY
+        value: AIzaSyCxdDusq913Tdgz8yy6fTgPx0XTQBkVoKg
+      - key: OPENWEATHER_API_KEY
+        value: aecca5e0f885e4fb4c7d44ef1dda1161
+      - key: JWT_SECRET
+        value: agrismart_super_secret_jwt_key_2024_agrivision
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        value: admin123
+      - key: NODE_ENV
+        value: production
