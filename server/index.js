@@ -10,21 +10,29 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// 1. IMPROVED CORS FOR SOCKET.IO
+// 1. SOCKET.IO CORS CONFIGURATION
 const io = new Server(server, {
   cors: {
-    origin: [process.env.CLIENT_URL, "https://agrismart-inky.vercel.app", "http://localhost:5173"],
+    // Explicitly listing origins to prevent handshake errors
+    origin: [
+      process.env.CLIENT_URL, 
+      "https://agrismart-inky.vercel.app", 
+      "http://localhost:5173"
+    ].filter(Boolean), // Filters out undefined if CLIENT_URL isn't set yet
     methods: ['GET', 'POST'],
     credentials: true
   }
 });
 
-// 2. IMPROVED CORS FOR EXPRESS
-// This handles the "Preflight" requests that were failing in your browser
+// 2. EXPRESS CORS CONFIGURATION
 app.use(cors({ 
   origin: function (origin, callback) {
-    const allowedOrigins = [process.env.CLIENT_URL, "https://agrismart-inky.vercel.app", "http://localhost:5173"];
-    // Allow requests with no origin (like mobile apps or curl)
+    const allowedOrigins = [
+      process.env.CLIENT_URL, 
+      "https://agrismart-inky.vercel.app", 
+      "http://localhost:5173"
+    ];
+    // Allow requests with no origin (like mobile apps) or if in allowed list
     if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.CLIENT_URL === '*') {
       callback(null, true);
     } else {
@@ -32,7 +40,8 @@ app.use(cors({
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -48,28 +57,31 @@ app.use('/api/community', require('./routes/community'));
 app.use('/api/market', require('./routes/market'));
 app.use('/api/admin', require('./routes/admin'));
 
-// Socket.io setup
+// Socket.io for real-time market updates
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
   socket.on('disconnect', () => console.log('Client disconnected:', socket.id));
 });
 app.set('io', io);
 
-app.get('/', (req, res) => res.json({ message: 'AgriSmart API Running' }));
+// Health Check / Home Route
+app.get('/', (req, res) => res.json({ message: 'AgriSmart API Running Successfully' }));
 
 // 3. DATABASE AND SERVER START
+mongoose.set('strictQuery', false); // Optional: suppresses Mongoose 7 warning
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('MongoDB Connected');
     
-    const PORT = process.env.PORT || 5000;
+    // Render uses process.env.PORT; fallback to 10000 for standard Render Web Services
+    const PORT = process.env.PORT || 10000;
     
-    // CRITICAL: Added '0.0.0.0' so Render can route traffic to the container
+    // CRITICAL: Bind to '0.0.0.0' to ensure Cloudflare/Render Proxy connectivity
     server.listen(PORT, '0.0.0.0', () =>
       console.log(`Server running on port ${PORT}`)
     );
   })
   .catch(err => {
-    console.error('MongoDB error:', err);
-    process.exit(1); // Stop the server if DB fails to connect
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
   });
