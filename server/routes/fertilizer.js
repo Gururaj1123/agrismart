@@ -72,9 +72,9 @@ Return ONLY valid JSON no markdown:
       res.json({ ...JSON.parse(clean), imageUrl });
     } catch {
       res.json({
-        fertilizerName: 'DAP (Di-Ammonium Phosphate)',
+        fertilizerName: 'NANO UREA LIQUID',
         npkComposition: '18-46-0',
-        quantityPerAcre: '50 kg per acre',
+        quantityPerAcre: 'MIX 2 TO 4 ML OF THE LIQUID PER LITER FOR PER LITER ',
         applicationMethod: 'Broadcast evenly across field and mix into top 5cm soil before irrigation',
         applicationTiming: 'Apply before sowing or at time of first irrigation for best results',
         precautions: ['Wear gloves and mask while applying', 'Keep away from water bodies and drainage channels', 'Store in cool dry place away from direct sunlight'],
